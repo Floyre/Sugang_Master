@@ -300,13 +300,14 @@
             font-family: inherit;
         }
         .author-info {
-            text-align: right;
             color: #adb5bd;
             font-size: 0.8em;
             display: flex;
             align-items: center;
-            justify-content: flex-end;
+            justify-content: center;
             gap: 10px;
+            width: 500px;
+            margin: 20px auto 0;
         }
         .author-info a {
             color: inherit;
@@ -445,18 +446,6 @@
                 <button onclick="toggleTimer()" id="startBtn" class="start-btn" tabindex="-1">시작</button>
                 <div id="timer" tabindex="-1">00:00:00.000</div>
             </div>
-            <div class="author-info">
-                <div class="hits-counter">
-                    <a href="https://hits.sh/floyre.github.io/Sugang_Master.svg?label=방문&color=31d2f2">
-                        <img alt="Hits" src="https://hits.sh/floyre.github.io/Sugang_Master.svg?label=방문&color=31d2f2"/>
-                    </a>
-                </div>
-                <div>
-                    <a href="https://github.com/floyre/Sugang_Master" target="_blank">Sugang_Master</a>
-                    <span class="separator">/</span>
-                    <a href="https://github.com/floyre" target="_blank">Floyre</a>
-                </div>
-            </div>
         </div>
 
         <form id="sugangForm">
@@ -503,6 +492,19 @@
         </div>
 
         <span class="record-text" id="recordText"></span>
+    </div>
+
+    <div class="author-info">
+        <div class="hits-counter">
+            <a href="https://hits.sh/floyre.github.io/Sugang_Master.svg?label=방문&color=31d2f2">
+                <img alt="Hits" src="https://hits.sh/floyre.github.io/Sugang_Master.svg?label=방문&color=31d2f2"/>
+            </a>
+        </div>
+        <div>
+            <a href="https://github.com/floyre/Sugang_Master" target="_blank">Sugang_Master</a>
+            <span class="separator">/</span>
+            <a href="https://github.com/floyre" target="_blank">Floyre</a>
+        </div>
     </div>
 
     <div id="popup" class="popup">
