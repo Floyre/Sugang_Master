@@ -784,11 +784,7 @@
             // 마지막 과목이 아닐 때만 pass 사운드 재생
             if (currentSet <= document.querySelectorAll('.settings-item').length) {
                 const passSound = document.getElementById('passSound');
-                passSound.volume = 0.025;
-                passSound.currentTime = 0;
-                passSound.play().catch(function(error) {
-                    console.log("오디오 재생 실패:", error);
-                });
+                playSound(passSound);
             }
 
             if (timerInterval && document.getElementById('showPopup').checked) {
