@@ -1,0 +1,1004 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>수강신청 장바구니</title>
+    <link rel="stylesheet" as="style" crossorigin href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/static/pretendard.min.css" />
+    <style>
+        body {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            min-height: 100vh;
+            margin: 0;
+            background-color: #f8f9fa;
+            font-family: "Pretendard Variable", Pretendard, -apple-system, BlinkMacSystemFont, system-ui, Roboto, "Helvetica Neue", "Segoe UI", "Apple SD Gothic Neo", "Noto Sans KR", "Malgun Gothic", "Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol", sans-serif;
+            user-select: none;  /* 전체 드래그 방지 */
+            -webkit-user-select: none;
+            -moz-user-select: none;
+            -ms-user-select: none;
+        }
+        .container {
+            width: 1200px;  /* 수정: 컨테이너 너비 증가 */
+            padding: 30px;
+            margin: 0;
+            background-color: white;
+            border-radius: 8px;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+            position: relative;
+            z-index: 1;
+        }
+        .tab-navigation {
+            display: flex;
+            gap: 5px;
+            margin-bottom: -1px;
+            width: 1200px;  /* 수정: 탭 네비게이션 너비도 함께 증가 */
+            padding: 0 30px;
+            margin-top: 0;
+            position: relative;
+            z-index: 2;
+        }
+        .tab-link {
+            padding: 10px 20px;
+            background-color: #f8f9fa;
+            border: 1px solid #ddd;
+            border-bottom: none;
+            border-radius: 8px 8px 0 0;
+            color: #495057;
+            text-decoration: none;
+            font-size: 0.9em;
+            transition: background-color 0.2s;
+        }
+        .tab-link:hover {
+            background-color: #e9ecef;
+        }
+        .tab-link.active {
+            background-color: white;
+            color: #007bff;
+            font-weight: bold;
+            position: relative;
+            z-index: 3;
+        }
+        .tab-link.active::after {
+            content: '';
+            position: absolute;
+            bottom: -1px;
+            left: 0;
+            right: 0;
+            height: 1px;
+            background-color: white;
+            z-index: 3;
+        }
+        .course-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 20px;
+            table-layout: fixed;
+            user-select: none;
+            -webkit-user-select: none;
+            -moz-user-select: none;
+            -ms-user-select: none;
+        }
+        .course-table th, .course-table td {
+            padding: 12px;
+            text-align: left;
+            border-bottom: 1px solid #dee2e6;
+            vertical-align: middle;
+        }
+        /* 각 컬럼 너비 조정 */
+        .course-table th:nth-child(1), 
+        .course-table td:nth-child(1) {  /* No */
+            width: 40px;
+        }
+        .course-table th:nth-child(2), 
+        .course-table td:nth-child(2) {  /* 구분 */
+            width: 70px;
+        }
+        .course-table th:nth-child(3), 
+        .course-table td:nth-child(3) {  /* 이수구분 */
+            width: 70px;
+        }
+        .course-table th:nth-child(4), 
+        .course-table td:nth-child(4) {  /* 캠퍼스 */
+            width: 60px;
+        }
+        .course-table th:nth-child(5), 
+        .course-table td:nth-child(5) {  /* 학수번호-분반 */
+            width: 120px;
+        }
+        .course-table th:nth-child(6), 
+        .course-table td:nth-child(6),
+        .course-table th:nth-child(7), 
+        .course-table td:nth-child(7) {  /* 학년, 학점 */
+            width: 45px;
+        }
+        .course-table th:nth-child(8), 
+        .course-table td:nth-child(8) {  /* 교과목명 */
+            width: 120px;  /* 200px에서 120px로 감소 */
+        }
+        .course-table th:nth-child(9), 
+        .course-table td:nth-child(9) {  /* 담당교수 */
+            width: 80px;
+        }
+        .course-table th:nth-child(10), 
+        .course-table td:nth-child(10) {  /* 강의시간 및 강의실 */
+            width: 120px;
+        }
+        .course-table th:nth-child(11), 
+        .course-table td:nth-child(11) {  /* 강의평가 */
+            width: 60px;
+        }
+        .course-table th {
+            background-color: #f8f9fa;
+            font-weight: normal;
+            color: #495057;
+        }
+        .course-table tr:hover {
+            background-color: #f8f9fa;
+        }
+        .submit-btn {
+            padding: 2px 15px;
+            background-color: #007bff;
+            color: white;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+        }
+        .submit-btn:hover {
+            background-color: #0056b3;
+        }
+        .author-info {
+            text-align: right;
+            color: #adb5bd;
+            font-size: 0.8em;
+            margin-bottom: 20px;
+        }
+        .author-info a {
+            color: inherit;
+            text-decoration: none;
+        }
+        .author-info a:hover {
+            text-decoration: underline;
+        }
+        .author-info .separator {
+            margin: 0 2px;
+        }
+        .status-btn {
+            padding: 2px 8px;
+            background-color: #1abedf;
+            color: white;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 0.9em;
+            width: 65px;  /* 고정 너비 설정 */
+            text-align: center;
+            white-space: nowrap;
+            display: flex;  /* 추가 */
+            align-items: center;  /* 추가 */
+            justify-content: center;  /* 추가 */
+            height: 24px;  /* 추가: 높이 고정 */
+        }
+        .status-btn:hover {
+            background-color: #31d2f2;
+        }
+        .course-table td {
+            padding: 12px;
+            text-align: left;
+            border-bottom: 1px solid #dee2e6;
+            vertical-align: middle;
+            white-space: nowrap;  /* 추가: 줄바꿈 방지 */
+            max-width: 200px;     /* 추가: 최대 너비 설정 */
+            overflow: hidden;     /* 추가: 넘치는 내용 숨김 */
+            text-overflow: ellipsis;  /* 추가: 넘치는 내용 ... 처리 */
+        }
+        .timer-section {
+            margin-bottom: 15px;
+            display: flex;
+            align-items: center;
+            gap: 20px;
+            justify-content: space-between;
+        }
+        .timer-container {
+            display: flex;
+            align-items: center;
+            gap: 20px;
+        }
+        #timer {
+            font-size: 1.2em;
+            font-weight: bold;
+            color: #007bff;
+            font-family: inherit;
+            user-select: none;
+            -webkit-user-select: none;
+            -moz-user-select: none;
+            -ms-user-select: none;
+        }
+        #timer .time-number {
+            font-family: inherit;
+        }
+        .start-btn {
+            background-color: #28a745;
+            color: white;
+            padding: 5px 15px;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            transition: background-color 0.2s;
+        }
+        .start-btn.cancel {
+            background-color: #dc3545;
+        }
+        .start-btn.restart {
+            background-color: #1abedf;
+        }
+        .record-text {
+            color: #28a745;
+            font-weight: bold;
+            display: none;
+            text-align: center;
+            margin-top: 20px;
+            padding-top: 20px;
+            border-top: 1px solid #ddd;
+        }
+        .settings-section {
+            margin-bottom: 20px;
+            border: 1px solid #ddd;
+            padding: 15px;
+            border-radius: 4px;
+            user-select: none;
+            -webkit-user-select: none;
+            -moz-user-select: none;
+            -ms-user-select: none;
+        }
+        .settings-header {
+            font-weight: bold;
+            color: #212529;
+            display: flex;
+            align-items: center;
+            gap: 15px;
+            justify-content: space-between;  /* 추가: 양쪽 정렬 */
+        }
+        .settings-left-group {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+        }
+        .course-count {
+            background-color: #e9ecef;
+            color: #495057;
+            padding: 2px 8px;
+            border-radius: 10px;
+            font-size: 0.9em;
+            min-width: 24px;
+            text-align: center;
+        }
+        .settings-controls {
+            display: flex;
+            gap: 10px;
+        }
+        .settings-options {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+            margin-left: 15px;
+        }
+        .difficulty-controls {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            margin-left: 15px;
+        }
+        .difficulty-controls select {
+            padding: 2px 8px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            cursor: pointer;
+            height: 24px;  /* 높이 지정 */
+        }
+        .difficulty-controls label {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            margin: 0;  /* 마진 제거 */
+            height: 24px;  /* 높이 지정 */
+        }
+        .status-btn:disabled {
+            background-color: #adb5bd;
+            cursor: not-allowed;
+        }
+        .countdown-popup {
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%) scale(0);
+            background-color: rgba(0, 0, 0, 0.9);
+            color: white;
+            padding: 30px 50px;
+            border-radius: 8px;
+            display: none;
+            z-index: 1000;
+            text-align: center;
+            font-size: 1.5em;
+            font-weight: bold;
+            opacity: 0;
+            transition: transform 0.3s ease, opacity 0.3s ease;
+            user-select: none;
+            -webkit-user-select: none;
+            -moz-user-select: none;
+            -ms-user-select: none;
+        }
+        .countdown-popup.show {
+            transform: translate(-50%, -50%) scale(1);
+            opacity: 1;
+        }
+        .countdown-number {
+            font-size: 2em;
+            margin-top: 10px;
+            color: #1abedf;
+            transition: transform 0.3s ease;
+        }
+        .countdown-number.pulse {
+            transform: scale(1.2);
+        }
+        .popup {
+            position: fixed;
+            top: 20px;
+            left: 50%;
+            transform: translateX(-50%);
+            background-color: #28a745;
+            color: white;
+            padding: 15px 20px;
+            border-radius: 4px;
+            display: none;
+            z-index: 1000;
+            text-align: center;
+            opacity: 0;
+            transition: opacity 0.3s ease;
+            user-select: none;
+            -webkit-user-select: none;
+            -moz-user-select: none;
+            -ms-user-select: none;
+        }
+        .popup.show {
+            opacity: 1;
+        }
+        @keyframes slideDown {
+            from {
+                transform: translate(-50%, -100%);
+            }
+            to {
+                transform: translate(-50%, 0);
+            }
+        }
+        .popup.animate {
+            animation: slideDown 0.3s ease forwards;
+        }
+        .popup-content {
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+            align-items: center;
+        }
+        .popup-btn {
+            background-color: white;
+            color: #28a745;
+            border: none;
+            border-radius: 4px;
+            padding: 3px 15px;
+            cursor: pointer;
+            font-weight: bold;
+        }
+        .popup-btn:hover {
+            background-color: #f8f9fa;
+        }
+        .control-btn {
+            background-color: #1abedf;
+            color: white;
+            border: none;
+            border-radius: 4px;
+            padding: 1px 12px;
+            cursor: pointer;
+            font-size: 0.9em;
+        }
+        .control-btn:disabled {
+            background-color: #adb5bd;
+            cursor: not-allowed;
+        }
+        .control-btn:not(:disabled):hover {
+            background-color: #31d2f2;
+        }
+        .status-btn.full {
+            background-color: #dc3545;
+            cursor: not-allowed;
+            padding: 2px 4px;  /* 패딩 조정 */
+        }
+        .status-btn.full:hover {
+            background-color: #dc3545;
+        }
+        .bgm-toggle {
+            display: flex;
+            align-items: center;
+            gap: 5px;
+            margin-left: auto;  /* 추가: 우측 정렬 */
+        }
+    </style>
+</head>
+<body>
+    <div class="tab-navigation">
+        <a href="sugang.html" class="tab-link">학수번호</a>
+        <a href="basket.html" class="tab-link active">장바구니</a>
+    </div>
+    <div class="container">
+        <div class="timer-section">
+            <div class="timer-container">
+                <button onclick="toggleTimer()" id="startBtn" class="start-btn" tabindex="-1">시작</button>
+                <div id="timer" tabindex="-1">00:00:00.000</div>
+            </div>
+            <div class="author-info">
+                <a href="https://github.com/Floyre/Sugang_Master" target="_blank">Sugang_Master</a><span class="separator">/</span><a href="https://github.com/Floyre" target="_blank">Floyre</a>
+            </div>
+        </div>
+
+        <div class="settings-section">
+            <div class="settings-header">
+                <div class="settings-left-group">
+                    <span>과목 수 설정</span>
+                    <span class="course-count" id="courseCount">5</span>
+                    <div class="settings-controls">
+                        <button onclick="addCourse()" class="control-btn" id="addBtn">+ 추가</button>
+                        <button onclick="removeCourse()" class="control-btn" id="removeBtn">- 제거</button>
+                    </div>
+                    <div class="settings-options">
+                        <label>
+                            <input type="checkbox" id="difficultyUp" onchange="toggleDifficultyControls()">
+                            난이도 UP! 인원초과 넣기
+                        </label>
+                        <div class="difficulty-controls" id="difficultyControls" style="display: none;">
+                            <label>인원초과 수:</label>
+                            <select id="fullRowCount">
+                                <option value="1">1개</option>
+                                <option value="2">2개</option>
+                                <option value="3">3개</option>
+                            </select>
+                        </div>
+                    </div>
+                </div>
+                <label class="bgm-toggle">
+                    <input type="checkbox" id="bgmToggle" checked>
+                    소리 켜기
+                </label>
+            </div>
+        </div>
+
+        <table class="course-table">
+            <thead>
+                <tr>
+                    <th>No</th>
+                    <th>구분</th>
+                    <th>이수구분</th>
+                    <th>캠퍼스</th>
+                    <th>학수번호-분반</th>
+                    <th>학년</th>
+                    <th>학점</th>
+                    <th>교과목명</th>
+                    <th>담당교수</th>
+                    <th>강의시간 및 강의실</th>
+                    <th>강의평가</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td>1</td>
+                    <td><button class="status-btn" onclick="handleClick(this)">신청</button></td>
+                    <td>전선</td>
+                    <td>전체</td>
+                    <td>HBHA4388-1</td>
+                    <td>3</td>
+                    <td>3</td>
+                    <td>사회언어학</td>
+                    <td>서은아</td>
+                    <td>목1,2,3(107)</td>
+                    <td>조회</td>
+                </tr>
+                <!-- 나머지 과목들도 동일한 형식으로 추가 -->
+            </tbody>
+        </table>
+
+        <div class="record-text" id="recordText"></div>
+    </div>
+
+    <div id="countdownPopup" class="countdown-popup">
+        <div>준비하세요...</div>
+        <div class="countdown-number" id="countdownNumber"></div>
+    </div>
+
+    <audio id="startSound" preload="auto">
+        <source src="sound/start.mp3" type="audio/mpeg">
+    </audio>
+
+    <audio id="finishSound" preload="auto">
+        <source src="sound/finish.mp3" type="audio/mpeg">
+    </audio>
+
+    <audio id="passSound" preload="auto">
+        <source src="sound/pass2.mp3" type="audio/mpeg">
+    </audio>
+
+    <audio id="beginSound" preload="auto">
+        <source src="sound/begin.mp3" type="audio/mpeg">
+    </audio>
+
+    <audio id="bgmSound" preload="auto" loop>
+        <source src="sound/bgm.mp3" type="audio/mpeg">
+    </audio>
+
+    <div id="popup" class="popup">
+        <div class="popup-content">
+            <div>신청 되었습니다</div>
+            <button class="popup-btn" onclick="closePopup()">확인</button>
+        </div>
+    </div>
+
+    <script>
+        let timerInterval;
+        let startTime;
+        let remainingButtons;
+
+        // 랜덤 값 생성 함수들
+        function getRandomElement(array) {
+            return array[Math.floor(Math.random() * array.length)];
+        }
+
+        function getRandomNumber(min, max) {
+            return Math.floor(Math.random() * (max - min + 1)) + min;
+        }
+
+        function generateRandomCourseCode() {
+            const letters = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ';
+            let code = '';
+            for (let i = 0; i < 4; i++) {
+                code += getRandomElement(letters);
+            }
+            code += getRandomNumber(1000, 9999);
+            return code;
+        }
+
+        function getRandomPeriods() {
+            // 1부터 8까지의 숫자 배열 생성
+            const periods = Array.from({length: 8}, (_, i) => i + 1);
+            
+            // 배열을 섞고 앞에서 3개 선택하여 정렬
+            return shuffleArray([...periods])
+                .slice(0, 3)
+                .sort((a, b) => a - b)
+                .join(',');
+        }
+
+        function createCourseRow(index) {
+            const courseTypes = ['전선', '교선', '교필'];
+            const weekdays = ['월', '화', '수', '목', '금'];
+            
+            const courseType = getRandomElement(courseTypes);
+            const courseCode = generateRandomCourseCode();
+            const section = getRandomNumber(1, 9);
+            const year = getRandomNumber(1, 4);
+            const credit = getRandomNumber(1, 3);
+            const weekday = getRandomElement(weekdays);
+            const room = getRandomNumber(100, 999);
+            const periods = getRandomPeriods();  // 랜덤한 3개 교시 생성
+
+            return `
+                <tr>
+                    <td>${index}</td>
+                    <td><button class="status-btn" onclick="handleClick(this)">신청</button></td>
+                    <td>${courseType}</td>
+                    <td>전체</td>
+                    <td>${courseCode}-${section}</td>
+                    <td>${year}</td>
+                    <td>${credit}</td>
+                    <td>수강신청</td>
+                    <td>화이팅!</td>
+                    <td>${weekday}${periods}(${room})</td>
+                    <td>조회</td>
+                </tr>
+            `;
+        }
+
+        function createFullRow(index) {
+            const courseTypes = ['전선', '교선', '교필'];
+            const weekdays = ['월', '화', '수', '목', '금'];
+            
+            const courseType = getRandomElement(courseTypes);
+            const courseCode = generateRandomCourseCode();
+            const section = getRandomNumber(1, 9);
+            const year = getRandomNumber(1, 4);
+            const credit = getRandomNumber(1, 3);
+            const weekday = getRandomElement(weekdays);
+            const room = getRandomNumber(100, 999);
+            const periods = getRandomPeriods();  // 랜덤한 3개 교시 생성
+
+            return `
+                <tr>
+                    <td>${index}</td>
+                    <td><button class="status-btn full" disabled>인원초과</button></td>
+                    <td>${courseType}</td>
+                    <td>전체</td>
+                    <td>${courseCode}-${section}</td>
+                    <td>${year}</td>
+                    <td>${credit}</td>
+                    <td>수강신청</td>
+                    <td>화이팅!</td>
+                    <td>${weekday}${periods}(${room})</td>
+                    <td>조회</td>
+                </tr>
+            `;
+        }
+
+        function updateButtons() {
+            const tbody = document.querySelector('.course-table tbody');
+            const itemCount = tbody.children.length;
+            document.getElementById('removeBtn').disabled = itemCount <= 1;
+            document.getElementById('addBtn').disabled = itemCount >= 10;
+        }
+
+        function toggleDifficultyControls() {
+            const controls = document.getElementById('difficultyControls');
+            const checkbox = document.getElementById('difficultyUp');
+            controls.style.display = checkbox.checked ? 'flex' : 'none';
+            
+            // 과목 수에 따라 선택 가능한 인원초과 수 조정
+            updateFullRowOptions();
+        }
+
+        function updateFullRowOptions() {
+            const tbody = document.querySelector('.course-table tbody');
+            const totalRows = tbody.children.length;
+            const maxFullRows = totalRows;  // 수정: 과목 수만큼 인원초과 추가 가능
+            const select = document.getElementById('fullRowCount');
+            
+            select.innerHTML = '';  // 기존 옵션 제거
+            for(let i = 1; i <= maxFullRows; i++) {
+                const option = document.createElement('option');
+                option.value = i;
+                option.textContent = i + '개';
+                select.appendChild(option);
+            }
+        }
+
+        function updateCourseCount() {
+            const count = document.querySelector('.course-table tbody').children.length;
+            document.getElementById('courseCount').textContent = count;
+        }
+
+        function addCourse() {
+            const tbody = document.querySelector('.course-table tbody');
+            const currentCount = tbody.children.length;
+            if (currentCount < 10) {
+                tbody.insertAdjacentHTML('beforeend', createCourseRow(currentCount + 1));
+                updateButtons();
+                updateFullRowOptions();
+                updateCourseCount();  // 과목 수 업데이트
+            }
+        }
+
+        function removeCourse() {
+            const tbody = document.querySelector('.course-table tbody');
+            if (tbody.children.length > 1) {
+                tbody.removeChild(tbody.lastElementChild);
+                updateButtons();
+                updateFullRowOptions();
+                updateCourseCount();  // 과목 수 업데이트
+            }
+        }
+
+        function shuffleArray(array) {
+            for (let i = array.length - 1; i > 0; i--) {
+                const j = Math.floor(Math.random() * (i + 1));
+                [array[i], array[j]] = [array[j], array[i]];
+            }
+            return array;
+        }
+
+        function playSound(sound) {
+            if (document.getElementById('bgmToggle').checked) {
+                sound.volume = 0.025;
+                sound.currentTime = 0;
+                return sound.play().catch(function(error) {
+                    console.log("오디오 재생 실패:", error);
+                });
+            }
+            return Promise.resolve();  // 소리가 꺼져있을 때는 바로 resolve
+        }
+
+        function startCountdown() {
+            const popup = document.getElementById('countdownPopup');
+            const numberDisplay = document.getElementById('countdownNumber');
+            const startSound = document.getElementById('startSound');
+            const startBtn = document.getElementById('startBtn');  // 추가
+            let count = 3;
+
+            // 시작 버튼 비활성화
+            startBtn.disabled = true;  // 추가
+
+            playSound(startSound);
+
+            // 초기 상태 설정
+            popup.style.display = 'block';
+            numberDisplay.textContent = count;
+            
+            setTimeout(() => {
+                popup.classList.add('show');
+                numberDisplay.classList.add('pulse');
+            }, 10);
+
+            setTimeout(() => {
+                numberDisplay.classList.remove('pulse');
+            }, 200);
+
+            const countInterval = setInterval(() => {
+                count--;
+                
+                if (count > 0) {
+                    numberDisplay.textContent = count;
+                    numberDisplay.classList.add('pulse');
+                    setTimeout(() => {
+                        numberDisplay.classList.remove('pulse');
+                    }, 200);
+                } else {
+                    clearInterval(countInterval);
+                    popup.classList.remove('show');
+                    setTimeout(() => {
+                        popup.style.display = 'none';
+                        
+                        const beginSound = document.getElementById('beginSound');
+                        
+                        // begin 사운드가 끝나면 BGM 시작
+                        beginSound.addEventListener('ended', function() {
+                            if (document.getElementById('bgmToggle').checked) {
+                                const bgmSound = document.getElementById('bgmSound');
+                                playSound(bgmSound);
+                            }
+                        }, { once: true });
+
+                        playSound(beginSound).then(() => {
+                            startGame();
+                            startBtn.disabled = false;  // 게임 시작 후 버튼 다시 활성화
+                        }).catch(function(error) {
+                            console.log("begin 사운드 재생 실패:", error);
+                            startGame();
+                            startBtn.disabled = false;  // 에러 발생 시에도 버튼 활성화
+                        });
+                    }, 300);
+                }
+            }, 1000);
+        }
+
+        function startGame() {
+            startTime = Date.now();
+            timerInterval = setInterval(updateTimer, 10);
+            
+            const tbody = document.querySelector('.course-table tbody');
+            const difficultyUp = document.getElementById('difficultyUp').checked;
+            
+            if (difficultyUp) {
+                // 기존 행들의 학수번호와 분반 정보 저장
+                const originalCourses = Array.from(tbody.children).map((row, index) => ({
+                    haksu: `HBHA4388-${index + 1}`,
+                    index: index + 1
+                }));
+                
+                // 인원초과 행 개수는 사용자가 선택한 값 사용
+                const fullRowCount = parseInt(document.getElementById('fullRowCount').value);
+                
+                // 전체 행 배열 생성 (신청 가능 + 인원초과)
+                const allRows = [];
+                let normalIndex = 0;
+                
+                // 모든 위치를 랜덤하게 결정
+                const totalPositions = originalCourses.length + fullRowCount;
+                const fullPositions = new Set();
+                
+                while(fullPositions.size < fullRowCount) {
+                    const pos = Math.floor(Math.random() * totalPositions);
+                    fullPositions.add(pos);
+                }
+                
+                // 행 배열 생성
+                for(let i = 0; i < totalPositions; i++) {
+                    const rowIndex = i + 1;  // 순차적인 인덱스 사용
+                    if (!fullPositions.has(i)) {
+                        // 신청 가능한 과목
+                        allRows.push(createCourseRow(rowIndex));
+                        normalIndex++;
+                    } else {
+                        // 인원초과 과목
+                        allRows.push(createFullRow(rowIndex));
+                    }
+                }
+                
+                // tbody 업데이트
+                tbody.innerHTML = allRows.join('');
+            }
+
+            // 버튼 상태 설정
+            const buttons = document.querySelectorAll('.status-btn:not(.full)');
+            buttons.forEach(btn => {
+                btn.disabled = false;
+                btn.style.backgroundColor = '#1abedf';
+            });
+            remainingButtons = buttons.length;
+
+            // 설정 버튼 비활성화
+            document.getElementById('addBtn').disabled = true;
+            document.getElementById('removeBtn').disabled = true;
+            document.getElementById('difficultyUp').disabled = true;
+
+            const btn = document.getElementById('startBtn');
+            btn.textContent = '취소';
+            btn.classList.add('cancel');
+        }
+
+        function resetTable() {
+            const tbody = document.querySelector('.course-table tbody');
+            const currentCount = tbody.children.length;
+            const normalCount = document.querySelectorAll('.status-btn:not(.full)').length;
+            
+            tbody.innerHTML = '';  // 테이블 초기화
+            
+            // 신청 가능했던 과목 수만큼 새로운 행 추가
+            for (let i = 0; i < normalCount; i++) {
+                tbody.insertAdjacentHTML('beforeend', createCourseRow(i + 1));
+            }
+        }
+
+        function toggleTimer() {
+            const btn = document.getElementById('startBtn');
+            
+            if (!timerInterval) {
+                if (btn.textContent === '다시하기') {
+                    btn.textContent = '시작';
+                    btn.classList.remove('restart');
+                    document.getElementById('recordText').style.display = 'none';
+                    document.getElementById('timer').innerHTML = 
+                        `<span class="time-number">00</span>:<span class="time-number">00</span>:<span class="time-number">00</span>.<span class="time-number">000</span>`;
+                    document.getElementById('difficultyUp').disabled = false;
+                    
+                    // 테이블 초기화 추가
+                    resetTable();
+                    return;
+                }
+                startCountdown();
+            } else {
+                clearInterval(timerInterval);
+                timerInterval = null;
+                document.getElementById('timer').innerHTML = 
+                    `<span class="time-number">00</span>:<span class="time-number">00</span>:<span class="time-number">00</span>.<span class="time-number">000</span>`;
+                
+                // 모든 오디오 정지
+                const audioElements = ['startSound', 'beginSound', 'bgmSound', 'passSound', 'finishSound'];
+                audioElements.forEach(id => {
+                    const sound = document.getElementById(id);
+                    sound.pause();
+                    sound.currentTime = 0;
+                });
+
+                // 테이블 초기화 추가
+                resetTable();
+
+                // 설정 버튼 활성화
+                updateButtons();
+
+                btn.textContent = '시작';
+                btn.classList.remove('cancel');
+                document.getElementById('recordText').style.display = 'none';
+                document.getElementById('difficultyUp').disabled = false;
+            }
+        }
+
+        function showPopup() {
+            const popup = document.getElementById('popup');
+            
+            // 모든 신청 버튼 비활성화
+            document.querySelectorAll('.status-btn').forEach(btn => {
+                if (!btn.disabled) {
+                    btn.style.pointerEvents = 'none';
+                }
+            });
+            
+            popup.style.display = 'block';
+            setTimeout(() => {
+                popup.classList.add('show', 'animate');
+            }, 10);
+        }
+
+        function closePopup() {
+            const popup = document.getElementById('popup');
+            popup.classList.remove('show');
+            
+            setTimeout(() => {
+                popup.style.display = 'none';
+                popup.classList.remove('animate');
+                
+                // 신청 버튼 다시 활성화
+                document.querySelectorAll('.status-btn').forEach(btn => {
+                    if (!btn.disabled) {
+                        btn.style.pointerEvents = 'auto';
+                    }
+                });
+            }, 300);
+        }
+
+        function handleClick(button) {
+            if (!timerInterval) return;
+
+            showPopup();
+
+            button.disabled = true;
+            button.style.backgroundColor = '#adb5bd';
+            remainingButtons--;
+
+            // 마지막 버튼이 아닐 때만 pass 사운드 재생
+            if (remainingButtons > 0) {
+                const passSound = document.getElementById('passSound');
+                playSound(passSound);
+            }
+
+            if (remainingButtons === 0) {
+                clearInterval(timerInterval);
+                timerInterval = null;
+
+                // BGM 정지
+                const bgmSound = document.getElementById('bgmSound');
+                bgmSound.pause();
+                bgmSound.currentTime = 0;
+
+                const finalTime = document.getElementById('timer').textContent;
+                document.getElementById('recordText').textContent = 
+                    `😎  당신의 수강신청 기록  :  ${finalTime} 🔥  `;
+                document.getElementById('recordText').style.display = 'block';
+
+                // finish 사운드 재생
+                const finishSound = document.getElementById('finishSound');
+                playSound(finishSound);
+
+                const btn = document.getElementById('startBtn');
+                btn.textContent = '다시하기';
+                btn.classList.remove('cancel');
+                btn.classList.add('restart');
+
+                updateButtons();
+            }
+        }
+
+        function updateTimer() {
+            const currentTime = Date.now();
+            const elapsedTime = new Date(currentTime - startTime);
+            const hours = String(elapsedTime.getUTCHours()).padStart(2, '0');
+            const minutes = String(elapsedTime.getUTCMinutes()).padStart(2, '0');
+            const seconds = String(elapsedTime.getUTCSeconds()).padStart(2, '0');
+            const milliseconds = String(elapsedTime.getUTCMilliseconds()).padStart(3, '0');
+            
+            document.getElementById('timer').innerHTML = 
+                `<span class="time-number">${hours}</span>:<span class="time-number">${minutes}</span>:<span class="time-number">${seconds}</span>.<span class="time-number">${milliseconds}</span>`;
+        }
+
+        // 초기 설정
+        window.addEventListener('load', function() {
+            const tbody = document.querySelector('.course-table tbody');
+            tbody.innerHTML = '';  // 기존 행 제거
+            for (let i = 0; i < 5; i++) {  // 기본 5개 항목 추가
+                tbody.insertAdjacentHTML('beforeend', createCourseRow(i + 1));
+            }
+            updateButtons();
+            updateFullRowOptions();
+            updateCourseCount();  // 초기 과목 수 설정
+            
+            // BGM 체크박스 기본값 설정
+            document.getElementById('bgmToggle').checked = true;
+        });
+    </script>
+</body>
+</html> 
