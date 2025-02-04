@@ -704,7 +704,8 @@
 
         function playSound(sound) {
             if (document.getElementById('bgmToggle').checked) {
-                sound.volume = 0.025;
+                // pass2 소리는 0.1, 나머지는 0.25로 설정
+                sound.volume = (sound.id === 'passSound') ? 0.1 : 0.25;
                 sound.currentTime = 0;
                 return sound.play().catch(function(error) {
                     console.log("오디오 재생 실패:", error);
